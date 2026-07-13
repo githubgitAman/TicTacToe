@@ -3,6 +3,7 @@ package Models;
 import Exceptions.BotCountException;
 import Exceptions.PlayerCountException;
 import Exceptions.DuplicateSymbolException;
+import Models.ENUMs.CELLSTATE;
 import Models.ENUMs.GAMESTATE;
 import Models.ENUMs.PLAYERTYPE;
 import Strategies.WinningStrategy;
@@ -165,5 +166,92 @@ public class Game {
 
     public void setWinningStrategy(List<WinningStrategy> winningStrategy) {
         this.winningStrategy = winningStrategy;
+    }
+
+    public void makeMove(){
+        Player currentPlayer = players.get(nextMovePlayerIndex);
+        System.out.println("It is " + currentPlayer.getName() + "'s turn" + "Please make your move");
+
+        Move move = currentPlayer.makeMove(board);
+        if(!validate(move)){
+            System.out.println("Invalid move. Please try again");
+            //This return is to not allow while loop inside main to break
+            return;
+        }
+        int row = move.getCell().getRow();
+        int col = move.getCell().getCol();
+
+        Cell cellToUpdate = board.getBoard().get(row).get(col);
+        cellToUpdate.setCellState(CELLSTATE.FILLED);
+        cellToUpdate.setPlayer(currentPlayer);
+
+        //Adding move to moves list to support UNDO feature
+        moves.add(new Move(cellToUpdate, currentPlayer));
+
+        nextMovePlayerIndex += 1;
+        nextMovePlayerIndex = (nextMovePlayerIndex % (players.size()));
+
+        if(checkWinner(move, board)){
+            GAMESTATE gameState = GAMESTATE.ENDED;
+            //Person playing currently can only win
+            winner = currentPlayer;
+        }
+        //Check for empty cells or number of moves equals size
+        else if(moves.size() == (board.getDimension() * board.getDimension())){
+            GAMESTATE gameState = GAMESTATE.DRAW;
+        }
+
+    }
+    private boolean validate(Move move){
+        int row = move.getCell().getRow();
+        int column = move.getCell().getCol();
+
+        if(row >= board.getDimension()){
+            return false;
+        }
+        if(column >= board.getDimension()){
+            return false;
+        }
+
+        if(board.getBoard()
+                .get(row)
+                .get(column)
+                .getCellState()
+                .equals(CELLSTATE.EMPTY)){
+            return true;
+        }
+        //TODO : for any other conditions I am returning false
+        return false;
+    }
+    public boolean checkWinner(Move move, Board board){
+        for(WinningStrategy strategy : winningStrategy){
+            if(strategy.getWinningStrategy(move, board)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void undo(){
+         if(moves.size() == 0){
+             System.out.println("Nothing to undo");
+         }
+
+         Move lastMove = moves.get(moves.size() - 1);
+         moves.remove(lastMove);
+
+         Cell cell = lastMove.getCell();
+         cell.setCellState(CELLSTATE.EMPTY);
+         cell.setPlayer(null);
+
+         nextMovePlayerIndex -= 1;
+
+         for(WinningStrategy strategy : winningStrategy){
+             strategy.handleUndo(lastMove, board);
+         }
+    }
+    public void printBoard(){
+        board.printBoard();
     }
 }
