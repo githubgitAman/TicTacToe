@@ -16,9 +16,9 @@ public class GameController {
             , List<WinningStrategy> winningStrategy) throws PlayerCountException, DuplicateSymbolException, BotCountException {
 
         Game gameObject = Game.getBuilder()
-                .setSize(1)
-                .setPlayers(new ArrayList<>())
-                .setWinningStrategy(new ArrayList<>())
+                .setSize(size)
+                .setPlayers(players)
+                .setWinningStrategy(winningStrategy)
                 .build();
 
         return gameObject;
