@@ -14,9 +14,13 @@ import Strategies.WinningStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Client {
     public static void main(String[] args) throws PlayerCountException, DuplicateSymbolException, BotCountException {
+
+        Scanner scanner = new Scanner(System.in);
+
         GameController gameController = new GameController();
         List<Player> playerList = new ArrayList<>();
         playerList.add(
@@ -39,6 +43,13 @@ public class Client {
 
         while(gameController.checkStatus(game) == GAMESTATE.IN_PROGRESS) {
             gameController.printBoard(game);
+            System.out.println("Do you want to undo? (y/n)");
+            String answer = scanner.nextLine();
+            if(answer.equalsIgnoreCase("y")) {
+                gameController.undo(game);
+                continue;
+            }
+
             gameController.makeMove(game);
         }
 
