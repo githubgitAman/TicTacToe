@@ -192,9 +192,9 @@ public class Game {
         nextMovePlayerIndex = (nextMovePlayerIndex % (players.size()));
 
         if(checkWinner(move, board)){
-            GAMESTATE gameState = GAMESTATE.ENDED;
+             this.gameState = GAMESTATE.ENDED;
             //Person playing currently can only win
-            winner = currentPlayer;
+            this.winner = currentPlayer;
         }
         //Check for empty cells or number of moves equals size
         else if(moves.size() == (board.getDimension() * board.getDimension())){
